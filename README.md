@@ -1,21 +1,41 @@
-# Demo for the Web Push blog
+# Push Notification Demo
 
-This is the working demo code for the blog post here:
+A forked version of [master-atul/web-push-demo](https://github.com/master-atul/web-push-demo).
 
-[https://blog.atulr.com/web-notifications](https://blog.atulr.com/web-notifications)
+- Origin: [master-atul/web-push-demo](https://github.com/master-atul/web-push-demo)
+- Author: [@master-atul](https://github.com/master-atul)
 
-To launch backend:
+## Endpoints
 
-```sh
-cd backend
-npm install
-node index.js
-```
+### Frontend
 
-To launch frontend:
+- [https://frontend.local/](https://frontend.local/)
 
-```sh
-cd frontend
-npm install -g http-server
-http-server
+### Backend
+
+You may see "Hello World!" message if the backend is appropriately running.
+
+- [https://backend.local/](https://backend.local/)
+
+### Current Subscriptions
+
+- [https://backend.local/subscriptions](https://backend.local/subscriptions)
+
+Please note that your subscriptions only keep inside the memory. 
+All the subscription will vanish every time you stop containers.
+
+### Send notification
+
+- [https://backend.local/send-notification](https://backend.local/send-notification)
+
+Both `GET` and `POST` are acceptable. You may see the Hello World message
+ in your notification centre, if you send a GET request.
+
+In case if you want to send custom messages, send a POST request to the endpoint. 
+ Request body can take JSON format. The `text` key contains the message text:
+ 
+ ```json
+{
+	"text": "Hello beautiful world :)"
+}
 ```

@@ -1,0 +1,19 @@
+{
+  "name": "frontend",
+  "version": "0.0.1",
+  "description": "frontend for web-push-demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx http-server",
+    "build": "webpack --config webpack.config.js"
+  },
+  "dependencies": {
+    "http-server": "^0.11.1"
+  },
+  "devDependencies": {
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9"
+  },
+  "author": "Tomo L. Miamoto",
+  "license": "MIT"
+}
