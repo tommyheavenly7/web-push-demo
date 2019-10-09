@@ -1,28 +1,59 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const webpush = require('web-push');
+const VAPID = require('./vapid.json');
 
+// monitoring port
+const PORT = 4000;
+
+//setting our previously generated VAPID keys
+webpush.setVapidDetails('https://frontend.local/', VAPID.public, VAPID.private);
+
+// init express
 const app = express();
 app.use(cors());
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-const port = 4000;
-
-app.get("/", (req, res) => res.send("Hello World!"));
-
-const dummyDb = { subscription: null }; //dummy in memory store
-
+// subscribers
+const dummyDb = {subscriptions: []}; //dummy in memory store
 const saveToDatabase = async subscription => {
-  // Since this is a demo app, I am going to save this in a dummy in memory store. Do not do this in your apps.
-  // Here you should be writing your db logic to save it.
-  dummyDb.subscription = subscription;
+    await dummyDb.subscriptions.push(subscription);
 };
 
-// The new /save-subscription endpoint
-app.post("/save-subscription", async (req, res) => {
-  const subscription = req.body;
-  await saveToDatabase(subscription); //Method to save the subscription to Database
-  res.json({ message: "success" });
+//function to send the notification to the subscribed device
+const sendNotification = (subscription, dataToSend = '') => {
+    webpush.sendNotification(subscription, dataToSend)
+};
+
+/**
+ * Routing
+ */
+app.get("/", (req, res) => res.send("Hello World!"));
+app.get("/subscriptions", (req, res) => res.json({subscribers: dummyDb.subscriptions}));
+
+app.get('/send-notification', (req, res) => {
+    dummyDb.subscriptions.forEach(subscription => {
+        const message = 'Hello World';
+        sendNotification(subscription, message);
+        res.json({message: 'message sent.'});
+    });
+});
+app.post('/send-notification', (req, res) => {
+    dummyDb.subscriptions.forEach(subscription => {
+        const message = req.body.text.toString();
+        sendNotification(subscription, message);
+        res.json({message: 'message sent'});
+    });
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.post("/save-subscription", async (req, res) => {
+    const subscription = req.body;
+    await saveToDatabase(subscription).then(_ => res.json({message: "success?"}));
+});
+
+/**
+ * Listener
+ */
+app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
