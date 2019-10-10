@@ -30,45 +30,39 @@ const saveSubscription = async subscription => {
     return response.json();
 };
 
-const showPushNotification = (title, body, swRegistration) => {
+const showPushNotification = async (title, body, swRegistration) => {
     const options = {
         body: body
     };
-    swRegistration.showNotification(title, options).then(() => {
-        console.log(options);
-    });
+    await swRegistration.showNotification(title, options);
 };
+
+self.addEventListener('install', async (event) => {
+    console.log('ServiceWorker event: ' + event.type);
+    await self.skipWaiting().then(_ => console.log('    skipped waiting.'));
+});
 
 self.addEventListener('activate', async (event) => {
     console.log('ServiceWorker event: ' + event.type);
-    try {
-        const applicationServerKey = urlB64ToUint8Array(VAPID.public);
-        const options = {applicationServerKey, userVisibleOnly: true};
+    console.log('    activated:');
+    const applicationServerKey = urlB64ToUint8Array(VAPID.public);
+    const options = {applicationServerKey, userVisibleOnly: true};
 
-        console.log("  Try subscribing...");
-        const subscription = await self.registration.pushManager.subscribe(options);
-        console.log("  Subscribed.");
-        const response = await saveSubscription(subscription);
-        console.log(response);
-        console.log("  Subscription saved.");
-
-    } catch (error) {
-        console.log("Error", error.toString());
-    }
+    console.log("    Try subscribing...");
+    const subscription = await self.registration.pushManager.subscribe(options);
+    await saveSubscription(subscription).then(subscription => {
+        console.log("    Subscription saved.");
+        console.log(subscription);
+    });
 });
 
-self.addEventListener('install', async event => {
+self.addEventListener('push', async (event) => {
     console.log('ServiceWorker event: ' + event.type);
-});
-
-self.addEventListener('push', function (event) {
     if (!!!event.data) {
-        console.log('Push event but no data');
-        return;
+        throw new Error('Push event but no data');
     }
-    console.log('ServiceWorker event: ' + event.type);
-    console.log('  text: ', event.data.text());
-    showPushNotification('Tommy November7', event.data.text(), self.registration);
+    await showPushNotification('Tommy November7', event.data.text(), self.registration)
+        .then(_ => console.log('  ', event.data.text()));
 });
 
 console.log('Hello from ServiceWorker.');
