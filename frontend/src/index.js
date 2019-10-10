@@ -37,7 +37,8 @@ const main = _ => {
     checkIfRequiredObjectsExist();
     checkIfPermitted().then( async permission => {
         console.log('notification permission: ' + permission);
-        const registration = await navigator.serviceWorker.register("dist/service.js");
+        await navigator.serviceWorker.register("dist/service.js")
+            .catch( error => console.error(error.toString()));
     });
 };
 
