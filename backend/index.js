@@ -39,19 +39,26 @@ app.delete('/unsubscribe/:target', (req, res) => {
     } else {
         dummyDb.subscriptions.splice(parseInt(target), 1);
     }
-    res.send('unsubscribed: '+ target);
+    res.json({subscribers: dummyDb.subscriptions})
 });
 
 app.get('/send-notification', (req, res) => {
     dummyDb.subscriptions.forEach(subscription => {
-        const message = 'Hello World';
+        const fixedMessage = {
+            "text": "Hello World",
+            "data": {
+                "url": "https://frontend.local/page.html",
+                "mid": 999
+            }
+        };
+        const message = JSON.stringify(fixedMessage);
         sendNotification(subscription, message);
         res.json({message: 'message sent.'});
     });
 });
 app.post('/send-notification', (req, res) => {
     dummyDb.subscriptions.forEach(subscription => {
-        const message = req.body.text.toString();
+        const message = JSON.stringify(req.body);
         sendNotification(subscription, message);
         res.json({message: 'message sent'});
     });
