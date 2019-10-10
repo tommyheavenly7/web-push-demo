@@ -1,4 +1,14 @@
 const VAPID = require('../../backend/vapid.json');
+const LOG_SERVER = 'https://backend.local/';
+
+const getRequest = async (url) => {
+    const response = await fetch(url + '&t=' + (new Date).getTime(), {mode: 'no-cors'});
+    response.then(response => {
+        if (!!!response.ok) {
+            throw Error('Request failed.');
+        }
+    }).catch(error => console.log(error.message.toString()));
+};
 
 // urlB64ToUint8Array is a magic function that will encode the base64 public key
 // to Array buffer which is needed by the subscription option
@@ -30,11 +40,18 @@ const saveSubscription = async subscription => {
     return response.json();
 };
 
-const showPushNotification = async (title, body, swRegistration) => {
+const showPushNotification = async (datum, swRegistration) => {
     const options = {
-        body: body
+        body: datum.body,
+        title: datum.title,
+        icon: datum.icon,
+        tag: datum.message_id,
+        data: {
+            url: datum.data.url,
+            mid: datum.data.mid
+        }
     };
-    await swRegistration.showNotification(title, options);
+    await swRegistration.showNotification(datum.title, options);
 };
 
 self.addEventListener('install', async (event) => {
@@ -61,8 +78,37 @@ self.addEventListener('push', async (event) => {
     if (!!!event.data) {
         throw new Error('Push event but no data');
     }
-    await showPushNotification('Tommy November7', event.data.text(), self.registration)
+    const datum = JSON.parse(event.data.text());
+    const notificationData = {
+        body: datum.text,
+        title: 'Tommy November7',
+        icon: 'https://frontend.local/favicon.ico',
+        data: {
+            url: datum.data.url,
+            mid: datum.data.mid,
+        }
+    };
+    await showPushNotification(notificationData, self.registration)
         .then(_ => console.log('  ', event.data.text()));
+});
+
+self.addEventListener('notificationclick', async (event) => {
+    console.log('ServiceWorker event: ' + event.type);
+    event.notification.close();
+    const url = event.notification.data.url;
+    if (!url) {
+        return;
+    }
+    event.waitUntil(
+        clients.matchAll({
+            type: 'window'
+        }).then(function () {
+            if (clients.openWindow) {
+                return clients.openWindow(url)
+            }
+        })
+    );
+    // getRequest(LOG_SERVER + 'history/click.gif?mid=' + event.notification.data.mid).then(_ => console.log(''));
 });
 
 console.log('Hello from ServiceWorker.');
