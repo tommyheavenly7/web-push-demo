@@ -20,25 +20,32 @@ You may see "Hello World!" message if the backend is appropriately running.
 
 - [https://backend.local/](https://backend.local/)
 
-### Current Subscriptions
+#### Subscriptions
 
-- [https://backend.local/subscriptions](https://backend.local/subscriptions)
+- GET: [https://backend.local/subscriptions](https://backend.local/subscriptions)
+- DELETE: [https://backend.local/unsubscribe/:target](https://backend.local/unsubscribe/)
+
+`:target` can take an int as an array key or a keyword. 
+An `int` can delete a single subscription. The backend app deletes an item tied with the array key.
+The keyword, `all`, can delete all subscriptions at once.
 
 Please note that your subscriptions only keep inside the memory. 
 All the subscription will vanish every time you stop containers.
 
-### Send notification
+#### Send notification
 
-- [https://backend.local/send-notification](https://backend.local/send-notification)
+- GET: [https://backend.local/send-notification](https://backend.local/send-notification)
+- POST: [https://backend.local/send-notification](https://backend.local/send-notification)
 
-Both `GET` and `POST` are acceptable. You may see the Hello World message
- in your notification centre, if you send a GET request.
-
-In case if you want to send custom messages, send a POST request to the endpoint. 
- Request body can take JSON format. The `text` key contains the message text:
+Both `GET` and `POST` are available. If you want to send a custom message, 
+send a POST request to the endpoint. The Request body can take JSON format. 
+The `text` key contains the message text:
  
- ```json
+```json
 {
 	"text": "Hello beautiful world :)"
 }
 ```
+
+`GET` is only for convenience. Developers sometimes need an easy way to create a request. 
+GET request will show a notification with a fixed message, `Hello World`.
