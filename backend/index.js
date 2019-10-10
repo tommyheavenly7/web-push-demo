@@ -30,8 +30,17 @@ const sendNotification = (subscription, dataToSend = '') => {
 /**
  * Routing
  */
-app.get("/", (req, res) => res.send("Hello World!"));
-app.get("/subscriptions", (req, res) => res.json({subscribers: dummyDb.subscriptions}));
+app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/subscriptions', (req, res) => res.json({subscribers: dummyDb.subscriptions}));
+app.delete('/unsubscribe/:target', (req, res) => {
+    const target = req.param('target').toString();
+    if (target === 'all') {
+        dummyDb.subscriptions = [];
+    } else {
+        dummyDb.subscriptions.splice(parseInt(target), 1);
+    }
+    res.send('unsubscribed: '+ target);
+});
 
 app.get('/send-notification', (req, res) => {
     dummyDb.subscriptions.forEach(subscription => {
